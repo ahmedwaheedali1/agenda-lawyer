@@ -26,9 +26,9 @@ jobs:
         sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool
         pip install buildozer cython
 
-    - name: Setup Android SDK (المسار الصحيح لـ Buildozer)
+    - name: Setup Android SDK
       run: |
-        # Buildozer يتوقع SDK في هذا المسار
+        # تحديد مسار SDK
         SDK_PATH="/home/runner/.buildozer/android/platform/android-sdk"
         mkdir -p $SDK_PATH
         cd $SDK_PATH
@@ -37,17 +37,20 @@ jobs:
         wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
         unzip -q commandlinetools-linux-11076708_latest.zip
         
-        # تهيئة المجلدات بشكل صحيح
+        # إنشاء المجلد بالشكل الصحيح
         mkdir -p cmdline-tools
-        mv cmdline-tools cmdline-tools/latest
+        mv cmdline-tools cmdline-tools_temp
+        mkdir cmdline-tools
+        mv cmdline-tools_temp/* cmdline-tools/
+        rm -rf cmdline-tools_temp
         
         # قبول التراخيص
-        yes | cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
+        yes | cmdline-tools/bin/sdkmanager --licenses > /dev/null 2>&1 || true
         
         # تثبيت المكونات المطلوبة
-        cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.0"
-        cmdline-tools/latest/bin/sdkmanager "platforms;android-33"
-        cmdline-tools/latest/bin/sdkmanager "platform-tools"
+        cmdline-tools/bin/sdkmanager "build-tools;33.0.0"
+        cmdline-tools/bin/sdkmanager "platforms;android-33"
+        cmdline-tools/bin/sdkmanager "platform-tools"
         
         echo "✅ تم تثبيت Android SDK بنجاح"
 
