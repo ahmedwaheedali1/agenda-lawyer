@@ -8,26 +8,46 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4  # ✅ تم التحديث من v3 إلى v4
-    
+      uses: actions/checkout@v4
+
     - name: Setup Python
-      uses: actions/setup-python@v5  # ✅ تم التحديث من v4 إلى v5
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-    
+
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool
         pip install buildozer cython
-    
+
+    - name: Setup Android SDK
+      run: |
+        # تحميل Android SDK command line tools
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        unzip commandlinetools-linux-11076708_latest.zip -d android-sdk
+        mkdir -p android-sdk/cmdline-tools
+        mv android-sdk/cmdline-tools android-sdk/cmdline-tools/latest
+        export ANDROID_SDK_ROOT=$PWD/android-sdk
+        echo "ANDROID_SDK_ROOT=$PWD/android-sdk" >> $GITHUB_ENV
+        echo "$PWD/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+        
+        # قبول التراخيص
+        yes | $PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+        
+        # تثبيت build-tools
+        $PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.0"
+        $PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-33"
+
     - name: Build APK
       run: |
         buildozer android debug
-    
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
