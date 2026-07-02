@@ -26,37 +26,10 @@ jobs:
         sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool
         pip install buildozer cython
 
-    - name: Setup Android SDK
-      run: |
-        # تحديد مسار SDK
-        SDK_PATH="/home/runner/.buildozer/android/platform/android-sdk"
-        mkdir -p $SDK_PATH
-        cd $SDK_PATH
-        
-        # تحميل أدوات سطر الأوامر
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip -q commandlinetools-linux-11076708_latest.zip
-        
-        # إنشاء المجلد بالشكل الصحيح
-        mkdir -p cmdline-tools
-        mv cmdline-tools cmdline-tools_temp
-        mkdir cmdline-tools
-        mv cmdline-tools_temp/* cmdline-tools/
-        rm -rf cmdline-tools_temp
-        
-        # تثبيت المكونات مع تحديد المسار
-        yes | cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH --licenses > /dev/null 2>&1 || true
-        
-        # تثبيت build-tools والمنصات مع تحديد المسار
-        cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "build-tools;33.0.0"
-        cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "platforms;android-33"
-        cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "platform-tools"
-        
-        echo "✅ تم تثبيت Android SDK بنجاح"
-
-    - name: Build APK
-      run: |
-        buildozer android debug
+    - name: Build APK with Buildozer Action
+      uses: kivy/buildozer-action@v1
+      with:
+        command: buildozer android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
