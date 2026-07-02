@@ -28,38 +28,38 @@ jobs:
 
     - name: Setup Android SDK
       run: |
-        # تحميل Android SDK
+        # تحميل Android SDK في المكان اللي بيدور فيه Buildozer
+        mkdir -p /home/runner/.buildozer/android/platform/android-sdk
+        cd /home/runner/.buildozer/android/platform/android-sdk
+        
+        # تحميل command line tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip commandlinetools-linux-11076708_latest.zip -d android-sdk
+        unzip commandlinetools-linux-11076708_latest.zip
         
-        # إنشاء المجلد بالشكل الصحيح
-        mkdir -p android-sdk/cmdline-tools/latest
-        mv android-sdk/cmdline-tools/* android-sdk/cmdline-tools/latest/ 2>/dev/null || true
-        
-        # تحديد المسار (للاستخدام الفوري)
-        export ANDROID_SDK_ROOT=$PWD/android-sdk
-        export PATH=$PATH:$PWD/android-sdk/cmdline-tools/latest/bin
-        
-        # حفظ المتغيرات للخطوات التالية
-        echo "ANDROID_SDK_ROOT=$PWD/android-sdk" >> $GITHUB_ENV
-        echo "ANDROID_HOME=$PWD/android-sdk" >> $GITHUB_ENV
-        echo "$PWD/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+        # إنشاء المجلد بالشكل المطلوب
+        mkdir -p cmdline-tools/latest
+        mv cmdline-tools/* cmdline-tools/latest/
         
         # قبول التراخيص
-        yes | $PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        yes | cmdline-tools/latest/bin/sdkmanager --licenses || true
         
         # تثبيت build-tools والمنصات
-        $PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.0"
-        $PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-33"
+        cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.0"
+        cmdline-tools/latest/bin/sdkmanager "platforms;android-33"
         
-        # إنشاء مجلد build-tools في المكان اللي بيدور فيه Buildozer
-        mkdir -p /home/runner/.buildozer/android/platform/android-sdk
-        cp -r android-sdk/* /home/runner/.buildozer/android/platform/android-sdk/
+        # تثبيت platform-tools
+        cmdline-tools/latest/bin/sdkmanager "platform-tools"
+        
+        # تحديد المتغيرات
+        echo "ANDROID_HOME=/home/runner/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=/home/runner/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
 
     - name: Build APK
       run: |
-        # تأكيد وجود build-tools
+        # تأكيد وجود SDK
+        ls -la /home/runner/.buildozer/android/platform/android-sdk/
         ls -la /home/runner/.buildozer/android/platform/android-sdk/build-tools/
+        
         buildozer android debug
 
     - name: Upload APK
