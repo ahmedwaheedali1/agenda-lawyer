@@ -23,7 +23,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool
+        # تثبيت كل الأدوات المطلوبة
+        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool automake autotools-dev
         pip install buildozer cython
 
     - name: Setup Android SDK
@@ -48,12 +49,12 @@ jobs:
         $SDK_PATH/cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "platforms;android-33"
         $SDK_PATH/cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "build-tools;33.0.0"
 
-    - name: Setup Android NDK (r25b)
+    - name: Setup Android NDK (r23c - الأكثر استقراراً)
       run: |
-        NDK_PATH="/home/runner/.buildozer/android/platform/android-ndk-r25b"
+        NDK_PATH="/home/runner/.buildozer/android/platform/android-ndk-r23c"
         cd /home/runner/.buildozer/android/platform/
-        wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
-        unzip -q android-ndk-r25b-linux.zip
+        wget https://dl.google.com/android/repository/android-ndk-r23c-linux.zip
+        unzip -q android-ndk-r23c-linux.zip
         echo "ANDROIDNDK=$NDK_PATH" >> $GITHUB_ENV
 
     - name: Build APK
