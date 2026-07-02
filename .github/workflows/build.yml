@@ -44,13 +44,13 @@ jobs:
         mv cmdline-tools_temp/* cmdline-tools/
         rm -rf cmdline-tools_temp
         
-        # قبول التراخيص
-        yes | cmdline-tools/bin/sdkmanager --licenses > /dev/null 2>&1 || true
+        # تثبيت المكونات مع تحديد المسار
+        yes | cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH --licenses > /dev/null 2>&1 || true
         
-        # تثبيت المكونات المطلوبة
-        cmdline-tools/bin/sdkmanager "build-tools;33.0.0"
-        cmdline-tools/bin/sdkmanager "platforms;android-33"
-        cmdline-tools/bin/sdkmanager "platform-tools"
+        # تثبيت build-tools والمنصات مع تحديد المسار
+        cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "build-tools;33.0.0"
+        cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "platforms;android-33"
+        cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "platform-tools"
         
         echo "✅ تم تثبيت Android SDK بنجاح"
 
