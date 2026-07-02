@@ -1,4 +1,4 @@
-name: Build APK
+name: Build APK with Docker
 
 on:
   push:
@@ -8,58 +8,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Install dependencies
+    - name: Build APK using Docker
       run: |
-        sudo apt-get update
-        # تثبيت كل الأدوات المطلوبة
-        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool automake autotools-dev
-        pip install buildozer cython
-
-    - name: Setup Android SDK
-      run: |
-        SDK_PATH="/home/runner/.buildozer/android/platform/android-sdk"
-        mkdir -p $SDK_PATH
-        cd $SDK_PATH
-        
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip -q commandlinetools-linux-11076708_latest.zip
-        
-        mkdir -p cmdline-tools
-        mv cmdline-tools cmdline-tools_temp
-        mkdir cmdline-tools
-        mv cmdline-tools_temp/* cmdline-tools/
-        rm -rf cmdline-tools_temp
-        
-        ln -s $SDK_PATH/cmdline-tools $SDK_PATH/tools
-        
-        yes | $SDK_PATH/cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH --licenses > /dev/null 2>&1 || true
-        $SDK_PATH/cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "platform-tools"
-        $SDK_PATH/cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "platforms;android-33"
-        $SDK_PATH/cmdline-tools/bin/sdkmanager --sdk_root=$SDK_PATH "build-tools;33.0.0"
-
-    - name: Setup Android NDK (r23c - الأكثر استقراراً)
-      run: |
-        NDK_PATH="/home/runner/.buildozer/android/platform/android-ndk-r23c"
-        cd /home/runner/.buildozer/android/platform/
-        wget https://dl.google.com/android/repository/android-ndk-r23c-linux.zip
-        unzip -q android-ndk-r23c-linux.zip
-        echo "ANDROIDNDK=$NDK_PATH" >> $GITHUB_ENV
-
-    - name: Build APK
-      run: |
-        buildozer android debug
+        docker run --rm \
+          -v $(pwd):/home/user/hostcwd \
+          -v $(pwd)/bin:/home/user/bin \
+          kivy/buildozer:latest \
+          bash -c "
+            cd /home/user/hostcwd &&
+            buildozer init &&
+            buildozer android debug
+          "
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
